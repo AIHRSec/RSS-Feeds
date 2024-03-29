@@ -1,12 +1,12 @@
 ## This script should be complete
 ## There might be minor changes in the future
 
-# Placeholder
+# Example of config.ini format
 #[email]
 #smtp_server = smtp.gmail.com
 #smtp_port = 587
 #sender_email = sender@gmail.com
-#recipient_email = receiver@gmail.com
+#recipient_email = receiver@domain1.com, receiver@domain2.com
 #password = password
 
 from email.mime.application import MIMEApplication
@@ -92,7 +92,7 @@ with open(ti_data, "w", newline='') as data_csv_file:
     data_writer = csv.DictWriter(data_csv_file, fieldnames=data_fieldnames)
     data_writer.writeheader()
 
-    # Creating the report CSV 
+    # Creating the report CSV
     with open(report_data, "w", newline='') as report_csv_file:
         report_writer = csv.DictWriter(report_csv_file, fieldnames=report_fieldnames)
         report_writer.writeheader()
@@ -112,7 +112,7 @@ with open(ti_data, "w", newline='') as data_csv_file:
 
             # Adding data to report CSV
             report_writer.writerow({'Feed_Name': feed_url,'Number_of_Entries': len(feed.entries), 'Number_of_Recent_Posts': len(filtered_entries)})
-            
+
             for entry in filtered_entries:
                 data_writer.writerow({'Title': entry.title, 'Date': entry.published, 'Link': entry.link})
 
@@ -125,11 +125,13 @@ smtp_port = int(config["email"]["smtp_port"])
 sender_email = config["email"]["sender_email"]
 recipient_email = config["email"]["recipient_email"]
 password = config["email"]["password"]
+recipient_emails = config["email"]["recipient_email"].split(', ')
+recipient_emails_str = ', '.join(recipient_emails)
 
 # Create a multipart message
 message = MIMEMultipart()
 message['From'] = sender_email
-message['To'] = recipient_email
+message['To'] = recipient_emails_str
 message['Subject'] = subject_name
 
 # Add message body
