@@ -7,4 +7,4 @@ month=$(date '+%Y-%m')-*
 #rm $month
 
 # For testing only
-ls $month > ~/test.txt
+ls $month > test.txt
