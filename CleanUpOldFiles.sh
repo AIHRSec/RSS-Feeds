@@ -8,4 +8,3 @@ ls ~/$previous_month > ~/Previous_Month_Files.txt
 
 # Deletes all the files that follow the variable format YYYY-MM-*
 rm ~/$previous_month
-
