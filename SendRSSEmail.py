@@ -1,13 +1,6 @@
 ## This script should be complete
+## This script is meant to provide daily news over the last 24 hours
 ## There might be minor changes in the future
-
-# Example of config.ini format
-#[email]
-#smtp_server = smtp.gmail.com
-#smtp_port = 587
-#sender_email = sender@gmail.com
-#recipient_email = receiver@domain1.com, receiver@domain2.com
-#password = password
 
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
@@ -82,9 +75,7 @@ def custom_tzinfos(abbreviation, offset):
 
 # Variables for files
 ti_data = (current_date + "_ti.csv")
-report_data = (current_date + "_report.csv")
 data_fieldnames = ["Title", "Date", "Link"]
-report_fieldnames = ["Feed_Name", "Number_of_Entries", "Number_of_Recent_Posts"]
 subject_name = (current_date + "- TI Report")
 
 # Creating the TI CSV
@@ -92,29 +83,20 @@ with open(ti_data, "w", newline='') as data_csv_file:
     data_writer = csv.DictWriter(data_csv_file, fieldnames=data_fieldnames)
     data_writer.writeheader()
 
-    # Creating the report CSV
-    with open(report_data, "w", newline='') as report_csv_file:
-        report_writer = csv.DictWriter(report_csv_file, fieldnames=report_fieldnames)
-        report_writer.writeheader()
+    for feed_url in urls:
+        # Parse the RSS feed
+        feed = feedparser.parse(feed_url)
+        # Check if any entry lacks the 'published' field (for troubleshooting)
+        missing_published_field = any('published' not in entry for entry in feed.entries)
+        if missing_published_field:
+            #print("This feed does not have the 'published' field for some entries.") # Could probably get rid of this line or add more to it
+            continue
+        # Filter the entries to include only those within the last 24 hours
+        filtered_entries = [entry for entry in feed.entries if parser.parse(entry.published, tzinfos=custom_tzinfos).astimezone(tz.tzutc()) >= twenty_four_hours_ago]
 
-        for feed_url in urls:
-            # Parse the RSS feed
-            feed = feedparser.parse(feed_url)
-            # Check if any entry lacks the 'published' field (for troubleshooting)
-            missing_published_field = any('published' not in entry for entry in feed.entries)
-
-            if missing_published_field:
-                #print("This feed does not have the 'published' field for some entries.") # Could probably get rid of this line or add more to it
-                continue
-
-            # Filter the entries to include only those within the last 24 hours
-            filtered_entries = [entry for entry in feed.entries if parser.parse(entry.published, tzinfos=custom_tzinfos).astimezone(tz.tzutc()) >= twenty_four_hours_ago]
-
-            # Adding data to report CSV
-            report_writer.writerow({'Feed_Name': feed_url,'Number_of_Entries': len(feed.entries), 'Number_of_Recent_Posts': len(filtered_entries)})
-
-            for entry in filtered_entries:
-                data_writer.writerow({'Title': entry.title, 'Date': entry.published, 'Link': entry.link})
+        # Adding data to the ti_data CSV
+        for entry in filtered_entries:
+            data_writer.writerow({'Title': entry.title, 'Date': entry.published, 'Link': entry.link})
 
 # Load email configuration from the config file
 config = configparser.ConfigParser()
@@ -125,8 +107,8 @@ smtp_port = int(config["email"]["smtp_port"])
 sender_email = config["email"]["sender_email"]
 recipient_email = config["email"]["recipient_email"]
 password = config["email"]["password"]
-recipient_emails = config["email"]["recipient_email"].split(', ')
-recipient_emails_str = ', '.join(recipient_emails)
+recipient_emails = config["email"]["recipient_email"].split(', ') # Adds multiple reicipients by comma
+recipient_emails_str = ', '.join(recipient_emails) # Joins multiple recicipients by comma
 
 # Create a multipart message
 message = MIMEMultipart()
@@ -142,12 +124,6 @@ message.attach(MIMEText(body, 'plain'))
 with open(ti_data, "rb") as file:
     part = MIMEApplication(file.read(), Name=ti_data)
 part['Content-Disposition'] = f'attachment; filename="{ti_data}"'
-message.attach(part)
-
-# Attach report_data
-with open(report_data, "rb") as file:
-    part = MIMEApplication(file.read(), Name=report_data)
-part['Content-Disposition'] = f'attachment; filename="{report_data}"'
 message.attach(part)
 
 # Connect to the SMTP server
