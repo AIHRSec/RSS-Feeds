@@ -7,4 +7,4 @@ export RSSVar=$HOME/ragno/rango-dev/bin/python3
 cd $HOME/ragno
 
 # Runs the Python script using the Python interpreter specified ENV
-$HOME/ragno/rango-dev/bin/python3 $HOME/ragno/demo/temp_checker.py
+$HOME/ragno/rango-dev/bin/python3 $HOME/ragno/scripts/temp_checker.py
