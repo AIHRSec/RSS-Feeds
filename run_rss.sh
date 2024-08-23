@@ -7,7 +7,7 @@ export RSSVar=$HOME/ragno/rango-dev/bin/python3
 cd $HOME/ragno
 
 # Runs the Python script using the Python interpreter specified ENV
-$HOME/ragno/rango-dev/bin/python3 $HOME/ragno/scripts/SendRSSEmail.py
+$HOME/ragno/rango-dev/bin/python3 $HOME/ragno/scripts/send_rss_email.py
 
 # Moves output
 mv 2024-* ./output
