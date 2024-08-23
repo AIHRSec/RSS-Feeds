@@ -25,6 +25,21 @@ github_raw_url = 'https://raw.githubusercontent.com/AIHRSec/RSS-Feeds/main/RSSFe
 raw_data = fetch_csv_raw_data_from_github(github_raw_url)
 urls = []
 
+def fetch_no_rss_html_from_github(no_rss_url):
+    nru_response = requests.get(no_rss_url) # nru = no_rss_url
+    if nru_response.status_code == 200:
+        return nru_response.text
+    else:
+        print(f"Failed to fetch blog_without_rss HTML data. Status code: {nru_response.status_code}")
+        return None
+
+nru_raw_url = "https://raw.githubusercontent.com/AIHRSec/RSS-Feeds/main/blogs_without_rss.html"
+nru_raw_data = fetch_no_rss_html_from_github(nru_raw_url)
+nru_html_content = nru_raw_data
+
+current_date = datetime.now().strftime("%B %d, %Y")
+html_content = nru_html_content.replace("{{current_date}}", current_date)
+
 if raw_data:
     url_list = [url.strip() for url in raw_data.split(',') if url.strip()]
     urls = url_list
@@ -117,8 +132,8 @@ message['To'] = recipient_emails_str
 message['Subject'] = subject_name
 
 # Add message body
-body = ("This is the report for " + current_date)
-message.attach(MIMEText(body, 'plain'))
+#body = ("This is the report for " + current_date)
+message.attach(MIMEText(html_content, 'html'))
 
 # Attach ti_data
 with open(ti_data, "rb") as file:
